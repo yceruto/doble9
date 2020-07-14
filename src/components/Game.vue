@@ -75,7 +75,9 @@ export default {
             this.showWinner();
             return;
           }
-          this.changeTurn();
+          setTimeout(() => {
+            this.changeTurn();
+          }, 1000);
         }, 1000);
       }
     },
@@ -142,8 +144,9 @@ export default {
     },
     prePlay(player, number) {
       if (
-        (this.ghost !== null && this.stack[player].position !== 'bottom') ||
-        this.turn !== player || this.gameOver
+        (this.ghost !== null && this.stack[player].position !== "bottom") ||
+        this.turn !== player ||
+        this.gameOver
       ) {
         return;
       }
