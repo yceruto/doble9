@@ -6,7 +6,7 @@
         :visible="visible"
         :number="number"
         :angle="isLateralPosition ? 90 : 0"
-        :animate="true"
+        :animate="position === 'bottom'"
         :key="i"
         @click="$emit('click', id, number)"
       />
