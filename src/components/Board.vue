@@ -164,6 +164,8 @@ export default {
           player: move.player,
           visible: !(
             !isDouble &&
+            indexStart > 0 &&
+            indexStart < this.moves.length - 1 &&
             this.moves[indexStart].number === move.number &&
             this.moves.length > 2
           ),
