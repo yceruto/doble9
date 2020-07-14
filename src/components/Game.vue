@@ -29,7 +29,8 @@ export default {
       turn: 0,
       stack: [],
       board: [],
-      start: null
+      start: null,
+      winner: null
     };
   },
   props: {
@@ -57,6 +58,11 @@ export default {
       }
     },
     play({ player, number }) {
+      if (this.winner !== null) {
+        alert("Gano Jugador " + this.winner);
+        return;
+      }
+
       const index = this.stack[player].pieces.indexOf(number);
 
       if (index === -1) {
@@ -66,6 +72,7 @@ export default {
       // verificar forro
       if (this.add(number, player)) {
         this.stack[player].pieces.splice(index, 1);
+        this.checkWinner();
       } else {
         alert("Forro :)");
       }
@@ -140,6 +147,20 @@ export default {
         }
         this.stack.push(newPlayer);
       }
+    },
+    checkWinner() {
+      for (const player in this.stack) {
+        if (this.stack[player].pieces.length === 0) {
+          this.winner = player;
+          setTimeout(() => {
+            alert("Gano Jugador " + player);
+          }, 100);
+
+          return true;
+        }
+      }
+
+      return false;
     },
     sideA(number) {
       return parseInt(number);
