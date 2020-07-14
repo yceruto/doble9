@@ -2,12 +2,13 @@
   <div class="player">
     <div class="pieces" :style="style">
       <Piece
+        v-for="(number, i) in pieces"
         :visible="visible"
-        v-for="(n, i) in pieces"
-        :number="n"
+        :number="number"
         :angle="isLateralPosition ? 90 : 0"
-        @click="$emit('play', {player: id, number: n})"
+        :animate="true"
         :key="i"
+        @click="$emit('click', id, number)"
       />
     </div>
     <div v-if="showControls" class="controls"></div>

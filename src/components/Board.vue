@@ -7,8 +7,9 @@
       :corner="move.corner"
       :angle="move.angle"
       :visible="move.visible"
+      :ghost="move.ghost"
       :key="i"
-      @click="$emit('click', { number: move.number, player: move.player })"
+      @click="$emit('click', move, i)"
     />
   </div>
 </template>
@@ -94,6 +95,7 @@ export default {
           corner: isCorner,
           number: move.number,
           player: move.player,
+          ghost: move.ghost,
           visible: true,
           style: `grid-row: ${gridRow}; grid-column: ${gridCol} / span ${span}`
         });
@@ -162,6 +164,7 @@ export default {
           corner: isCorner,
           number: move.number,
           player: move.player,
+          ghost: move.ghost,
           visible: !(
             !isDouble &&
             indexStart > 0 &&

@@ -9,7 +9,7 @@
       :name="player.name"
       :id="player.id"
       :key="i"
-      @play="play"
+      @click="prePlay"
     />
   </div>
 </template>
@@ -17,7 +17,7 @@
 <script>
 import Board from "./Board.vue";
 import Player from "./Player.vue";
-import { sideA, sideB } from "./../functions";
+import { sideA, sideB, isDoubleSide, isSame } from "./../functions";
 
 export default {
   components: {
@@ -30,7 +30,9 @@ export default {
       stack: [],
       board: [],
       start: null,
-      winner: null
+      winner: null,
+      move: null,
+      ghost: null
     };
   },
   props: {
@@ -50,62 +52,109 @@ export default {
     }
   },
   methods: {
-    remove({ player, number }) {
-      const index = this.board.findIndex(move => move.number === number);
+    remove({ player, number, ghost }, index) {
       if (index === 0 || index === this.board.length - 1) {
         this.board.splice(index, 1);
-        this.stack[player].pieces.push(number);
+
+        if (ghost) {
+          this.removeGhost();
+          this.play(player, number, index === 0 ? "left" : "right");
+        } else {
+          this.stack[player].pieces.push(number);
+        }
       }
     },
-    play({ player, number }) {
+    removeGhost() {
+      let index;
+      while ((index = this.board.findIndex(move => move.ghost)) !== -1) {
+        this.board.splice(index, 1);
+      }
+      this.ghost = null;
+    },
+    prePlay(player, number) {
+      if (this.ghost !== null && this.ghost !== player) {
+        return;
+      }
+
+      this.removeGhost();
+
       if (this.winner !== null) {
         alert("Gano Jugador " + this.winner);
         return;
       }
 
-      const index = this.stack[player].pieces.indexOf(number);
-
-      if (index === -1) {
+      if (this.board.indexOf(number) !== -1) {
         return;
       }
 
-      // verificar forro
-      if (this.add(number, player)) {
-        this.stack[player].pieces.splice(index, 1);
-        this.checkWinner();
-      } else {
-        alert("Forro :)");
-      }
-    },
-    add(number, player) {
-      if (this.board.indexOf(number) !== -1) {
-        return false;
+      const index = this.stack[player].pieces.indexOf(number);
+      if (index === -1) {
+        return;
       }
 
       if (this.board.length === 0) {
         this.start = number;
         this.board.push({ number, player });
-        return true;
+        this.stack[player].pieces.splice(index, 1);
+
+        return;
       }
 
+      if (this.add(player, number, true)) {
+        this.ghost = player;
+      } else {
+        alert("Forro :)");
+      }
+    },
+    play(player, number, position) {
+      if (position === "left") {
+        this.board.unshift({ player, number, ghost: false });
+      } else {
+        this.board.push({ player, number, ghost: false });
+      }
+
+      const index = this.stack[player].pieces.findIndex(n => isSame(n, number));
+      this.stack[player].pieces.splice(index, 1);
+      this.checkWinner();
+    },
+    add(player, number, ghost) {
       const head1 = this.board[0];
       const head2 = this.board[this.board.length - 1];
       const numberA = sideA(number);
       const numberB = sideB(number);
+      const isDouble = isDoubleSide(number);
+      let result = false;
 
       if (sideA(head1.number) === numberB) {
-        this.board.unshift({ number, player });
-      } else if (sideA(head1.number) === numberA) {
-        this.board.unshift({ number: numberB + numberA / 10, player });
-      } else if (sideB(head2.number) === numberB) {
-        this.board.push({ number: numberB + numberA / 10, player });
-      } else if (sideB(head2.number) === numberA) {
-        this.board.push({ number, player });
-      } else {
-        return false;
+        this.board.unshift({ player, number, ghost });
+        result = true;
+        if (!ghost) {
+          return result;
+        }
       }
 
-      return true;
+      if (sideA(head1.number) === numberA && !isDouble) {
+        this.board.unshift({ player, number: numberB + numberA / 10, ghost });
+        result = true;
+        if (!ghost) {
+          return result;
+        }
+      }
+
+      if (sideB(head2.number) === numberB) {
+        this.board.push({ player, number: numberB + numberA / 10, ghost });
+        result = true;
+        if (!ghost) {
+          return result;
+        }
+      }
+
+      if (sideB(head2.number) === numberA && !isDouble) {
+        this.board.push({ player, number, ghost });
+        result = true;
+      }
+
+      return result;
     },
     reset() {
       // crear fichas

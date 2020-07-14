@@ -1,5 +1,11 @@
 <template>
-  <div class="tile" :style="style" @click="$emit('click', number)">
+  <div
+    class="tile"
+    :style="style"
+    @click="$emit('click', number)"
+    @mouseenter="mouseEnter"
+    @mouseleave="mouseLeave"
+  >
     <div v-if="visible" :class="className(sideA)">
       <span class="tile-dot" v-for="n in sideA" :key="n" />
     </div>
@@ -14,6 +20,11 @@
 import { sideA, sideB } from "./../functions";
 
 export default {
+  data: function() {
+    return {
+      hover: false
+    };
+  },
   props: {
     number: {
       type: Number,
@@ -26,6 +37,14 @@ export default {
     visible: {
       type: Boolean,
       default: true
+    },
+    ghost: {
+      type: Boolean,
+      default: false
+    },
+    animate: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -48,15 +67,24 @@ export default {
         2
       );
 
+      const scale = this.animate && this.hover ? 0.85 : 0.80
+
       return {
-        transform: `rotate(${angle}deg) scale(0.80)`,
-        boxShadow: `${shadowX}px ${shadowY}px 4px 1px rgba(65, 49, 43, 0.5), ${shadowX}px ${shadowY}px 0px 0px rgba(65, 49, 43, 0.5)`
+        transform: `rotate(${angle}deg) scale(${scale})`,
+        boxShadow: `${shadowX}px ${shadowY}px 4px 1px rgba(65, 49, 43, 0.5), ${shadowX}px ${shadowY}px 0px 0px rgba(65, 49, 43, 0.5)`,
+        opacity: this.ghost ? 0.23 : 1
       };
     }
   },
   methods: {
     className(n) {
       return "tile-number tile-number--" + n;
+    },
+    mouseEnter() {
+      this.hover = true;
+    },
+    mouseLeave() {
+      this.hover = false;
     }
   }
 };

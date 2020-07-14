@@ -9,3 +9,7 @@ export function sideB(number) {
 export function isDoubleSide(number) {
     return sideA(number) === sideB(number);
 }
+
+export function isSame(a, b) {
+    return sideA(a) === sideA(b) && sideB(a) === sideB(b) || sideA(a) === sideB(b) && sideB(a) === sideA(b);
+}
