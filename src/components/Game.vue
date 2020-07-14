@@ -77,6 +77,7 @@ export default {
       }
 
       this.removeGhost();
+      this.checkWinner();
 
       if (this.winner !== null) {
         alert("Gano Jugador " + this.winner);
@@ -208,6 +209,7 @@ export default {
           return true;
         }
       }
+      this.winner = null;
 
       return false;
     },

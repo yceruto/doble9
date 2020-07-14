@@ -128,10 +128,10 @@ export default {
       );
       const leftMoves = this.moves.slice(0, indexStart).reverse();
       const rightMoves = this.moves.slice(indexStart);
-      const board = [];
       const left = this.createTiles(leftMoves, 26, indexStart, -1, -1);
       const right = this.createTiles(rightMoves, 22, indexStart, 1, 1);
 
+      const board = [];
       Array.prototype.push.apply(board, left);
       Array.prototype.push.apply(board, right);
 
