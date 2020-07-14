@@ -1,0 +1,203 @@
+<template>
+  <div class="board">
+    <Piece
+      v-for="(move, i) in board()"
+      :number="move.number"
+      :style="move.style"
+      :corner="move.corner"
+      :angle="move.angle"
+      :visible="move.visible"
+      :key="i"
+      @click="$emit('click', { number: move.number, player: move.player })"
+    />
+  </div>
+</template>
+
+<script>
+import Piece from "./Piece.vue";
+import { isDoubleSide } from "./../functions";
+
+export default {
+  components: {
+    Piece
+  },
+  props: {
+    start: Number,
+    moves: {
+      type: Array,
+      default() {
+        return [];
+      }
+    }
+  },
+  methods: {
+    board() {
+      if (this.moves.length === 0) {
+        return [];
+      }
+
+      const indexStart = this.moves.findIndex(
+        move => move.number === this.start
+      );
+      const leftMoves = this.moves.slice(0, indexStart).reverse();
+      const rightMoves = this.moves.slice(indexStart);
+      const board = [];
+
+      let maxSpaces = 12;
+      let gridCol = 21;
+      let gridRow = 8;
+      let factor = -1;
+      let span = 0;
+      let angle = 0;
+      let isCorner = false;
+      let isDouble = false;
+      let isPrevDouble = isDoubleSide(this.moves[indexStart].number);
+      let isPrevDoubleHorz = false;
+      let isPrevCorner = false;
+      let colSpaces = 0;
+      for (const move of leftMoves) {
+        isDouble = isDoubleSide(move.number);
+        isCorner =
+          !isDouble && !isPrevDouble && !isPrevCorner && colSpaces > maxSpaces;
+
+        if (factor === 1 && isPrevCorner) {
+          // on-op
+        } else if (
+          (factor === 1 && isPrevDouble && !isPrevDoubleHorz) ||
+          (factor === -1 && (isDouble || isCorner || isPrevCorner))
+        ) {
+          gridCol += 2 * factor;
+        } else {
+          gridCol += 4 * factor;
+        }
+
+        if (isDouble && isPrevCorner) {
+          gridCol -= factor;
+        }
+
+        if (isCorner && !isDouble) {
+          gridRow -= 1;
+        }
+
+        if (isCorner || (isDouble && !isPrevCorner)) {
+          span = 2;
+          angle = 0;
+        } else {
+          span = 4;
+          angle = 90 * factor;
+
+          isPrevDoubleHorz = isDouble;
+        }
+
+        board.unshift({
+          angle,
+          corner: isCorner,
+          number: move.number,
+          player: move.player,
+          visible: true,
+          style: `grid-row: ${gridRow}; grid-column: ${gridCol} / span ${span}`
+        });
+
+        if (isCorner) {
+          factor *= -1;
+          gridRow -= 3;
+          colSpaces = 0;
+          maxSpaces = 24;
+        } else {
+          colSpaces += span;
+        }
+
+        isPrevDouble = isDouble;
+        isPrevCorner = isCorner;
+      }
+
+      maxSpaces = 12;
+      gridCol = 17;
+      gridRow = 8;
+      factor = 1;
+      span = 0;
+      angle = 0;
+      isCorner = false;
+      isDouble = false;
+      isPrevDouble = false;
+      isPrevDoubleHorz = false;
+      isPrevCorner = false;
+      colSpaces = 0;
+      for (const move of rightMoves) {
+        isDouble = isDoubleSide(move.number);
+        isCorner =
+          !isDouble && !isPrevDouble && !isPrevCorner && colSpaces > maxSpaces;
+
+        if (factor === 1 && isPrevCorner) {
+          // on-op
+        } else if (
+          (factor === 1 && isPrevDouble && !isPrevDoubleHorz) ||
+          (factor === -1 && (isDouble || isCorner || isPrevCorner))
+        ) {
+          gridCol += 2 * factor;
+        } else {
+          gridCol += 4 * factor;
+        }
+
+        if (isDouble && isPrevCorner) {
+          gridCol -= factor;
+        }
+
+        if (isCorner && !isDouble) {
+          gridRow += 1;
+        }
+
+        if (isCorner || (isDouble && !isPrevCorner)) {
+          span = 2;
+          angle = 0;
+        } else {
+          span = 4;
+          angle = -90 * factor;
+
+          isPrevDoubleHorz = isDouble;
+        }
+
+        board.push({
+          angle,
+          corner: isCorner,
+          number: move.number,
+          player: move.player,
+          visible: !(
+            !isDouble &&
+            this.moves[indexStart].number === move.number &&
+            this.moves.length > 2
+          ),
+          style: `grid-row: ${gridRow}; grid-column: ${gridCol} / span ${span}`
+        });
+
+        if (isCorner) {
+          factor *= -1;
+          gridRow += 3;
+          colSpaces = 0;
+          maxSpaces = 24;
+        } else {
+          colSpaces += span;
+        }
+
+        isPrevDouble = isDouble;
+        isPrevCorner = isCorner;
+      }
+
+      return board;
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+.board {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  justify-items: center;
+  grid-template-columns: repeat(42, 35px);
+  grid-template-rows: repeat(16, 35px);
+  grid-gap: 1px;
+  align-self: center;
+}
+</style>
