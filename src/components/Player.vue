@@ -27,7 +27,7 @@ export default {
     name: String,
     visible: {
       type: Boolean,
-      default: true
+      default: false
     },
     turn: {
       type: Boolean,

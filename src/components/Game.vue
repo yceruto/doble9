@@ -6,9 +6,10 @@
       :class="player.class"
       :pieces="player.pieces"
       :position="player.position"
+      :visible="player.position === 'bottom' || gameOver"
       :name="player.name"
       :id="player.id"
-      :turn="turn === player.id"
+      :turn="turn === player.id || gameOver"
       :key="i"
       @click="prePlay"
     />
@@ -18,7 +19,7 @@
 <script>
 import Board from "./Board.vue";
 import Player from "./Player.vue";
-import { sideA, sideB, isDoubleSide, isSame } from "./../functions";
+import { sideA, sideB, isDoubleSide, isSame, think } from "./../functions";
 
 export default {
   components: {
@@ -33,7 +34,8 @@ export default {
       start: null,
       winner: null,
       move: null,
-      ghost: null
+      ghost: null,
+      gameOver: false
     };
   },
   props: {
@@ -59,6 +61,23 @@ export default {
       } else {
         ++this.turn;
       }
+
+      if (this.stack[this.turn].position !== "bottom") {
+        setTimeout(() => {
+          const move = think(this.stack[this.turn].pieces, this.board, 1);
+          if (move) {
+            if (this.doPlay(this.turn, move.number, move.position)) {
+              return;
+            }
+          } else if (this.checkDraw()) {
+            alert("Se tranco el juego!");
+            this.gameOver = true;
+            this.showWinner();
+            return;
+          }
+          this.changeTurn();
+        }, 1000);
+      }
     },
     changeTurnBack() {
       if (this.turn === 0) {
@@ -67,18 +86,50 @@ export default {
         --this.turn;
       }
     },
+    showWinner() {
+      const players = [];
+      for (const player of this.stack) {
+        players.push({
+          id: player.id,
+          total: player.pieces.reduce(
+            (total, number) => total + sideA(number) + sideB(number),
+            0
+          )
+        });
+      }
+      players.sort((a, b) => (a.total > b.total ? -1 : 1));
+      const first = players.pop();
+      const second = players.pop();
+      if (first.total === second.total) {
+        alert("Empate a " + first.total + " puntos!");
+      } else {
+        alert(
+          "Gano Jugador " + (first.id + 1) + " con " + first.total + " puntos!"
+        );
+      }
+    },
+    checkDraw() {
+      for (const player of this.stack) {
+        if (think(player.pieces, this.board, 0)) {
+          return false;
+        }
+      }
+      return true;
+    },
     play({ player, number, ghost }, index) {
       if (index === 0 || index === this.board.length - 1) {
         this.board.splice(index, 1);
 
         if (ghost) {
           this.removeGhost();
-          this.doPlay(player, number, index === 0 ? "left" : "right");
+          if (this.doPlay(player, number, index === 0 ? "left" : "right")) {
+            return;
+          }
           this.changeTurn();
         } else {
           // undo
-          this.stack[player].pieces.push(number);
-          this.changeTurnBack();
+          //this.stack[player].pieces.push(number);
+          //this.changeTurnBack();
         }
       }
     },
@@ -91,17 +142,15 @@ export default {
     },
     prePlay(player, number) {
       if (
-        (this.ghost !== null && this.ghost !== player) ||
-        this.turn !== player
+        (this.ghost !== null && this.stack[player].position !== 'bottom') ||
+        this.turn !== player || this.gameOver
       ) {
         return;
       }
 
       this.removeGhost();
-      this.checkWinner();
 
-      if (this.winner !== null) {
-        alert("Gano Jugador " + this.winner);
+      if (this.checkWinner()) {
         return;
       }
 
@@ -125,8 +174,6 @@ export default {
 
       if (this.addGhost(player, number)) {
         this.ghost = player;
-      } else {
-        alert("Forro :)");
       }
     },
     doPlay(player, number, position) {
@@ -138,7 +185,8 @@ export default {
 
       const index = this.stack[player].pieces.findIndex(n => isSame(n, number));
       this.stack[player].pieces.splice(index, 1);
-      this.checkWinner();
+
+      return this.checkWinner();
     },
     addGhost(player, number) {
       const head1 = this.board[0];
@@ -230,8 +278,9 @@ export default {
       for (const player in this.stack) {
         if (this.stack[player].pieces.length === 0) {
           this.winner = player;
+          this.gameOver = true;
           setTimeout(() => {
-            alert("Gano Jugador " + player);
+            alert("Gano Jugador " + (parseInt(player) + 1));
           }, 100);
 
           return true;
