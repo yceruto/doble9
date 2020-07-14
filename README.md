@@ -1,4 +1,4 @@
-# todos
+# Doble9 - Dominos Game
 
 ## Project setup
 ```
