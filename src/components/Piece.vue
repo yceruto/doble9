@@ -49,7 +49,7 @@ export default {
       );
 
       return {
-        transform: `rotate(${angle}deg)`,
+        transform: `rotate(${angle}deg) scale(0.80)`,
         boxShadow: `${shadowX}px ${shadowY}px 4px 1px rgba(65, 49, 43, 0.5), ${shadowX}px ${shadowY}px 0px 0px rgba(65, 49, 43, 0.5)`
       };
     }

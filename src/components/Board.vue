@@ -43,9 +43,9 @@ export default {
       const rightMoves = this.moves.slice(indexStart);
       const board = [];
 
-      let maxSpaces = 12;
-      let gridCol = 21;
-      let gridRow = 8;
+      let maxSpaces = 15;
+      let gridCol = 26;
+      let gridRow = 11;
       let factor = -1;
       let span = 0;
       let angle = 0;
@@ -102,7 +102,7 @@ export default {
           factor *= -1;
           gridRow -= 3;
           colSpaces = 0;
-          maxSpaces = 24;
+          maxSpaces = 30;
         } else {
           colSpaces += span;
         }
@@ -111,9 +111,9 @@ export default {
         isPrevCorner = isCorner;
       }
 
-      maxSpaces = 12;
-      gridCol = 17;
-      gridRow = 8;
+      maxSpaces = 15;
+      gridCol = 22;
+      gridRow = 11;
       factor = 1;
       span = 0;
       angle = 0;
@@ -174,7 +174,7 @@ export default {
           factor *= -1;
           gridRow += 3;
           colSpaces = 0;
-          maxSpaces = 24;
+          maxSpaces = 30;
         } else {
           colSpaces += span;
         }
@@ -195,8 +195,8 @@ export default {
   justify-content: center;
   align-items: center;
   justify-items: center;
-  grid-template-columns: repeat(42, 35px);
-  grid-template-rows: repeat(16, 35px);
+  grid-template-columns: repeat(52, 28px);
+  grid-template-rows: repeat(21, 28px);
   grid-gap: 1px;
   align-self: center;
 }
