@@ -32,6 +32,92 @@ export default {
     }
   },
   methods: {
+    createTiles(moves, startGridCol, indexStart, colFactor, rowFactor) {
+      const board = [];
+      let gridCol = startGridCol;
+      let gridRow = 11;
+      let factor = colFactor;
+      let span = 0;
+      let angle = 0;
+      let isCorner = false;
+      let isDouble = false;
+      let isPrevDouble =
+        rowFactor === -1 ? isDoubleSide(this.moves[indexStart].number) : false;
+      let isPrevDoubleHorz = false;
+      let isPrevCorner = false;
+      let colSpaces = 0;
+      let maxSpaces = 15;
+      for (const move of moves) {
+        isDouble = isDoubleSide(move.number);
+        isCorner =
+          !isDouble && !isPrevDouble && !isPrevCorner && colSpaces > maxSpaces;
+
+        if (factor === 1 && isPrevCorner) {
+          // on-op
+        } else if (
+          (factor === 1 && isPrevDouble && !isPrevDoubleHorz) ||
+          (factor === -1 && (isDouble || isCorner || isPrevCorner))
+        ) {
+          gridCol += 2 * factor;
+        } else {
+          gridCol += 4 * factor;
+        }
+
+        if (isDouble && isPrevCorner) {
+          gridCol -= factor;
+        }
+
+        if (isCorner && !isDouble) {
+          gridRow += rowFactor;
+        }
+
+        if (isCorner || (isDouble && !isPrevCorner)) {
+          span = 2;
+          angle = 0;
+        } else {
+          span = 4;
+          angle = 90 * factor * rowFactor * -1;
+          isPrevDoubleHorz = isDouble;
+        }
+
+        const tile = {
+          angle,
+          corner: isCorner,
+          number: move.number,
+          player: move.player,
+          ghost: move.ghost,
+          visible: true,
+          style: `grid-row: ${gridRow}; grid-column: ${gridCol} / span ${span}`
+        };
+
+        if (rowFactor === -1) {
+          board.unshift(tile);
+        } else {
+          tile.visible = !(
+            !isDouble &&
+            indexStart > 0 &&
+            indexStart < this.moves.length - 1 &&
+            this.moves[indexStart].number === move.number &&
+            this.moves.length > 2
+          );
+          board.push(tile);
+        }
+
+        if (isCorner) {
+          factor *= -1;
+          gridRow += 3 * rowFactor;
+          colSpaces = 0;
+          maxSpaces = 30;
+        } else {
+          colSpaces += span;
+        }
+
+        isPrevDouble = isDouble;
+        isPrevCorner = isCorner;
+      }
+
+      return board;
+    },
     board() {
       if (this.moves.length === 0) {
         return [];
@@ -43,150 +129,11 @@ export default {
       const leftMoves = this.moves.slice(0, indexStart).reverse();
       const rightMoves = this.moves.slice(indexStart);
       const board = [];
+      const left = this.createTiles(leftMoves, 26, indexStart, -1, -1);
+      const right = this.createTiles(rightMoves, 22, indexStart, 1, 1);
 
-      let maxSpaces = 15;
-      let gridCol = 26;
-      let gridRow = 11;
-      let factor = -1;
-      let span = 0;
-      let angle = 0;
-      let isCorner = false;
-      let isDouble = false;
-      let isPrevDouble = isDoubleSide(this.moves[indexStart].number);
-      let isPrevDoubleHorz = false;
-      let isPrevCorner = false;
-      let colSpaces = 0;
-      for (const move of leftMoves) {
-        isDouble = isDoubleSide(move.number);
-        isCorner =
-          !isDouble && !isPrevDouble && !isPrevCorner && colSpaces > maxSpaces;
-
-        if (factor === 1 && isPrevCorner) {
-          // on-op
-        } else if (
-          (factor === 1 && isPrevDouble && !isPrevDoubleHorz) ||
-          (factor === -1 && (isDouble || isCorner || isPrevCorner))
-        ) {
-          gridCol += 2 * factor;
-        } else {
-          gridCol += 4 * factor;
-        }
-
-        if (isDouble && isPrevCorner) {
-          gridCol -= factor;
-        }
-
-        if (isCorner && !isDouble) {
-          gridRow -= 1;
-        }
-
-        if (isCorner || (isDouble && !isPrevCorner)) {
-          span = 2;
-          angle = 0;
-        } else {
-          span = 4;
-          angle = 90 * factor;
-
-          isPrevDoubleHorz = isDouble;
-        }
-
-        board.unshift({
-          angle,
-          corner: isCorner,
-          number: move.number,
-          player: move.player,
-          ghost: move.ghost,
-          visible: true,
-          style: `grid-row: ${gridRow}; grid-column: ${gridCol} / span ${span}`
-        });
-
-        if (isCorner) {
-          factor *= -1;
-          gridRow -= 3;
-          colSpaces = 0;
-          maxSpaces = 30;
-        } else {
-          colSpaces += span;
-        }
-
-        isPrevDouble = isDouble;
-        isPrevCorner = isCorner;
-      }
-
-      maxSpaces = 15;
-      gridCol = 22;
-      gridRow = 11;
-      factor = 1;
-      span = 0;
-      angle = 0;
-      isCorner = false;
-      isDouble = false;
-      isPrevDouble = false;
-      isPrevDoubleHorz = false;
-      isPrevCorner = false;
-      colSpaces = 0;
-      for (const move of rightMoves) {
-        isDouble = isDoubleSide(move.number);
-        isCorner =
-          !isDouble && !isPrevDouble && !isPrevCorner && colSpaces > maxSpaces;
-
-        if (factor === 1 && isPrevCorner) {
-          // on-op
-        } else if (
-          (factor === 1 && isPrevDouble && !isPrevDoubleHorz) ||
-          (factor === -1 && (isDouble || isCorner || isPrevCorner))
-        ) {
-          gridCol += 2 * factor;
-        } else {
-          gridCol += 4 * factor;
-        }
-
-        if (isDouble && isPrevCorner) {
-          gridCol -= factor;
-        }
-
-        if (isCorner && !isDouble) {
-          gridRow += 1;
-        }
-
-        if (isCorner || (isDouble && !isPrevCorner)) {
-          span = 2;
-          angle = 0;
-        } else {
-          span = 4;
-          angle = -90 * factor;
-
-          isPrevDoubleHorz = isDouble;
-        }
-
-        board.push({
-          angle,
-          corner: isCorner,
-          number: move.number,
-          player: move.player,
-          ghost: move.ghost,
-          visible: !(
-            !isDouble &&
-            indexStart > 0 &&
-            indexStart < this.moves.length - 1 &&
-            this.moves[indexStart].number === move.number &&
-            this.moves.length > 2
-          ),
-          style: `grid-row: ${gridRow}; grid-column: ${gridCol} / span ${span}`
-        });
-
-        if (isCorner) {
-          factor *= -1;
-          gridRow += 3;
-          colSpaces = 0;
-          maxSpaces = 30;
-        } else {
-          colSpaces += span;
-        }
-
-        isPrevDouble = isDouble;
-        isPrevCorner = isCorner;
-      }
+      Array.prototype.push.apply(board, left);
+      Array.prototype.push.apply(board, right);
 
       return board;
     }
