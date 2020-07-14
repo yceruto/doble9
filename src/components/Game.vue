@@ -70,7 +70,7 @@ export default {
               return;
             }
           } else if (this.checkDraw()) {
-            alert("Se tranco el juego!");
+            alert("Se trancó el juego!");
             this.gameOver = true;
             this.showWinner();
             return;
@@ -106,7 +106,7 @@ export default {
         alert("Empate a " + first.total + " puntos!");
       } else {
         alert(
-          "Gano Jugador " + (first.id + 1) + " con " + first.total + " puntos!"
+          "Ganó Jugador " + (first.id + 1) + " con " + first.total + " puntos!"
         );
       }
     },
@@ -283,7 +283,7 @@ export default {
           this.winner = player;
           this.gameOver = true;
           setTimeout(() => {
-            alert("Gano Jugador " + (parseInt(player) + 1));
+            alert("Ganó Jugador " + (parseInt(player) + 1));
           }, 100);
 
           return true;
