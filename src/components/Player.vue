@@ -7,11 +7,11 @@
         :number="number"
         :angle="isLateralPosition ? 90 : 0"
         :animate="position === 'bottom'"
+        :ghost="!turn"
         :key="i"
         @click="$emit('click', id, number)"
       />
     </div>
-    <div v-if="showControls" class="controls"></div>
   </div>
 </template>
 
@@ -25,11 +25,11 @@ export default {
   props: {
     id: Number,
     name: String,
-    showControls: {
-      type: Boolean,
-      default: false
-    },
     visible: {
+      type: Boolean,
+      default: true
+    },
+    turn: {
       type: Boolean,
       default: true
     },
@@ -90,7 +90,6 @@ export default {
 
   .controls {
     display: inline;
-    padding: 10px;
   }
 }
 </style>

@@ -62,14 +62,14 @@ export default {
       );
 
       let translate = "";
-      if (this.animate && this.visible && this.hover) {
+      if (this.animate && this.visible && this.hover && !this.ghost) {
         translate = "translateY(-10px)";
       }
 
       return {
         transform: `rotate(${angle}deg) scale(0.8) ${translate}`,
         boxShadow: `${shadowX}px ${shadowY}px 4px 1px rgba(65, 49, 43, 0.5), ${shadowX}px ${shadowY}px 0px 0px rgba(65, 49, 43, 0.5)`,
-        opacity: this.ghost && !this.hover ? 0.23 : 1,
+        opacity: this.ghost && !this.hover ? 0.35 : 1,
         transition: this.animate ? "all 0.3s" : "none"
       };
     }

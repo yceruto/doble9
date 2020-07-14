@@ -1,6 +1,6 @@
 <template>
-  <div class="game">
-    <Board class="board-area" :moves="board" :start="start" @click="remove" />
+  <div class="game" @dblclick="changeTurn">
+    <Board class="board-area" :moves="board" :start="start" @click="play" />
     <Player
       v-for="(player, i) in stack"
       :class="player.class"
@@ -8,6 +8,7 @@
       :position="player.position"
       :name="player.name"
       :id="player.id"
+      :turn="turn === player.id"
       :key="i"
       @click="prePlay"
     />
@@ -26,9 +27,9 @@ export default {
   },
   data: function() {
     return {
-      turn: 0,
       stack: [],
       board: [],
+      turn: null,
       start: null,
       winner: null,
       move: null,
@@ -52,15 +53,32 @@ export default {
     }
   },
   methods: {
-    remove({ player, number, ghost }, index) {
+    changeTurn() {
+      if (this.turn === this.stack.length - 1) {
+        this.turn = 0;
+      } else {
+        ++this.turn;
+      }
+    },
+    changeTurnBack() {
+      if (this.turn === 0) {
+        this.turn = this.stack.length - 1;
+      } else {
+        --this.turn;
+      }
+    },
+    play({ player, number, ghost }, index) {
       if (index === 0 || index === this.board.length - 1) {
         this.board.splice(index, 1);
 
         if (ghost) {
           this.removeGhost();
-          this.play(player, number, index === 0 ? "left" : "right");
+          this.doPlay(player, number, index === 0 ? "left" : "right");
+          this.changeTurn();
         } else {
+          // undo
           this.stack[player].pieces.push(number);
+          this.changeTurnBack();
         }
       }
     },
@@ -72,7 +90,10 @@ export default {
       this.ghost = null;
     },
     prePlay(player, number) {
-      if (this.ghost !== null && this.ghost !== player) {
+      if (
+        (this.ghost !== null && this.ghost !== player) ||
+        this.turn !== player
+      ) {
         return;
       }
 
@@ -97,17 +118,18 @@ export default {
         this.start = number;
         this.board.push({ number, player });
         this.stack[player].pieces.splice(index, 1);
+        this.changeTurn();
 
         return;
       }
 
-      if (this.add(player, number, true)) {
+      if (this.addGhost(player, number)) {
         this.ghost = player;
       } else {
         alert("Forro :)");
       }
     },
-    play(player, number, position) {
+    doPlay(player, number, position) {
       if (position === "left") {
         this.board.unshift({ player, number, ghost: false });
       } else {
@@ -118,12 +140,13 @@ export default {
       this.stack[player].pieces.splice(index, 1);
       this.checkWinner();
     },
-    add(player, number, ghost) {
+    addGhost(player, number) {
       const head1 = this.board[0];
       const head2 = this.board[this.board.length - 1];
       const numberA = sideA(number);
       const numberB = sideB(number);
       const isDouble = isDoubleSide(number);
+      const ghost = true;
       let result = false;
 
       if (sideA(head1.number) === numberB) {
@@ -178,8 +201,8 @@ export default {
         positions.push("bottom");
       } else if (this.players === 4) {
         positions.push("left");
-        positions.push("right");
         positions.push("bottom");
+        positions.push("right");
       }
 
       // repartir fichas a cada jugador
@@ -196,6 +219,11 @@ export default {
           newPlayer.pieces.push(stack.pop());
         }
         this.stack.push(newPlayer);
+
+        // tmp
+        if (newPlayer.position === "bottom") {
+          this.turn = player;
+        }
       }
     },
     checkWinner() {
