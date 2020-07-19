@@ -56,6 +56,10 @@ export default {
   },
   methods: {
     changeTurn() {
+      if (this.ghost) {
+        return;
+      }
+
       if (this.turn === this.stack.length - 1) {
         this.turn = 0;
       } else {
